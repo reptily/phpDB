@@ -1,6 +1,11 @@
 # phpDB
 convenient library to work with mysql for php
 
+## Install for composer
+```
+composer require reptily/db
+```
+
 ## Initialization module
 ```php
 require "./vendor/autoload.php";
