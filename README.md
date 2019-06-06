@@ -15,7 +15,7 @@ $config = [
 $DB = new \openWeb\DB($config);
 ```
 
-###Create table
+Create table
 ```php
 $table = [
                 "id" =>[
