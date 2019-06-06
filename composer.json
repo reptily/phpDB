@@ -2,6 +2,7 @@
     "name": "reptily/db",
     "description": "DB interface for MySQL",
     "license": "MIT",
+    "version": "1.0.0",
     "authors": [
         {
             "name": "Reptily",
