@@ -1,0 +1,18 @@
+{
+    "name": "reptily/db",
+    "description": "DB interface for MySQL",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Reptily",
+            "email": "reptily@go2ride.ru"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "psr-4":{
+            "openWeb\\":"openWeb"
+        }
+    }
+}
