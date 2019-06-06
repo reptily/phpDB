@@ -36,7 +36,7 @@ $DB->Create("account",$table);
 
 Insert value
 ```php
-$DB->account->Insert(["name"=>"user-".time()]);
+$DB->account->Insert(["name"=>"user"]);
 ```
 
 Select all rows and output to array
@@ -92,7 +92,7 @@ echo $DB->account->left("blog")->on("id","id")->Select()->getJson();
 
 Update values in table blog
 ```php
-$DB->blog->set(['name' => 'update-'.time()])->where(["id" => 2])->Update();
+$DB->blog->set(['name' => 'update'])->where(["id" => 2])->Update();
 ```
 Delete values in table account
 ```php
