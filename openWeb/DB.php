@@ -1,6 +1,5 @@
 <?php
 namespace openWeb;
-
 class DB
 {
     public $connectId;
@@ -38,6 +37,8 @@ class DB
             if(is_array($w)){
             $key=key($w);
             $val=$w[key($w)];
+            $key = mysqli_real_escape_string($this->connectId,$key);
+            $val = mysqli_real_escape_string($this->connectId,$val);
             $this->where.="`".$key."` = '".$val."' `~` ";
             }else{
             if(mb_strtolower(trim($w)) == "or"){
@@ -86,6 +87,8 @@ class DB
         $this->set = "SET ";
         $vals = ""; 
         foreach($set as $key=>$val){
+            $key = mysqli_real_escape_string($this->connectId,$key);
+            $val = mysqli_real_escape_string($this->connectId,$val);
             $vals .= "`".$key."` = '".$val."',";
         }
         $this->set.=mb_substr($vals, 0, -1);
@@ -221,7 +224,7 @@ class DB
         return $this;
         }
         
-        public function Delete(){
+    public function Delete(){
         $sql = "DELETE FROM `".$this->callTable."`";
         
         //WHERE
@@ -254,16 +257,13 @@ class DB
         }
         return $array;
     }
-
     
-    private function Query($q){
-        //$this->connectId->begin_transaction(MYSQLI_TRANS_START_READ_WRITE);    
+    private function Query($q){ 
         $result=MYSQLI_QUERY($this->connectId,$q) or die('MySQL Errore: ' . mysqli_error($this->connectId));
         if($this->debug){
             echo "<br>\nQuery count row:".mysqli_affected_rows($this->connectId)."<br>\n";
             $this->Debug($q);
         }
-        //$this->connectId->commit();
         $this->Clear();
         return $result;
     }
@@ -330,6 +330,12 @@ class DB
         
         $this->Query($sql);
         $this->$table=$this;
+    }
+    
+    public function getPrimary(){
+        $sql = "SHOW KEYS FROM `".$this->callTable."` WHERE Key_name = 'PRIMARY'";
+        $res=$this->Query($sql);
+        return $this->getArray($res)[0]['Column_name'] ?? null;
     }
     
 }
