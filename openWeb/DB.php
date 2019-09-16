@@ -1,5 +1,6 @@
 <?php
 namespace openWeb;
+
 class DB
 {
     public $connectId;
@@ -37,13 +38,11 @@ class DB
             if(is_array($w)){
             $key=key($w);
             $val=$w[key($w)];
-            $key = mysqli_real_escape_string($this->connectId,$key);
-            $val = mysqli_real_escape_string($this->connectId,$val);
-            $this->where.="`".$key."` = '".$val."' `~` ";
+            $this->where.="`".$this->es($key)."` = '".$this->es($val)."' `~` ";
             }else{
             if(mb_strtolower(trim($w)) == "or"){
                 $or=true;
-                    }else{
+            }else{
                 preg_match('/(.*)(>=|==|<=)(.*)/i', $w, $val);
                 if(count($val) != 4){
                 preg_match('/(.*)(>|<)(.*)/i', $w, $val);
@@ -51,7 +50,7 @@ class DB
                 
                 if(count($val) == 4){
                 $val[1]=str_replace(".","`.`",$val[1]);
-                $this->where.="`".trim($val[1])."` ".$val[2]." '".trim($val[3])."' `~` ";
+                $this->where.="`".trim($this->es($val[1]))."` ".$this->es($val[2])." '".trim($this->es($val[3]))."' `~` ";
                 }
             }
             }
@@ -68,18 +67,18 @@ class DB
     
     public function inner($table){
         $this->joinTable=$table;
-        $this->join.=" INNER JOIN `".$table."` ";
+        $this->join.=" INNER JOIN `".$this->es($table)."` ";
         return $this;
     }
     
     public function left($table){
         $this->joinTable=$table;
-        $this->join.=" LEFT JOIN `".$table."` ";
+        $this->join.=" LEFT JOIN `".$this->es($table)."` ";
         return $this;
     }
     
     public function on($t1,$t2){
-        $this->join.="ON `".$this->callTable."`.`".$t1."` = `".$this->joinTable."`.`".$t2."` ";
+        $this->join.="ON `".$this->callTable."`.`".$this->es($t1)."` = `".$this->joinTable."`.`".$this->es($t2)."` ";
         return $this;
     }
     
@@ -87,9 +86,7 @@ class DB
         $this->set = "SET ";
         $vals = ""; 
         foreach($set as $key=>$val){
-            $key = mysqli_real_escape_string($this->connectId,$key);
-            $val = mysqli_real_escape_string($this->connectId,$val);
-            $vals .= "`".$key."` = '".$val."',";
+            $vals .= "`".$this->es($key)."` = '".$this->es($val)."',";
         }
         $this->set.=mb_substr($vals, 0, -1);
         return $this;
@@ -111,7 +108,7 @@ class DB
             $value="DESC";
             }
             
-        $this->order=['key'=>$key,'value'=>$value];
+        $this->order=['key'=>$this->es($key),'value'=>$value];
         return $this;
     }
     
@@ -201,16 +198,16 @@ class DB
             if(is_array($val)){
             foreach($val as $keyChild=>$valChild){
                 if($_2d){
-                $keys .= "`".$keyChild."`,";
+                $keys .= "`".$this->es($keyChild)."`,";
                 $_2d=false;
                 }
-                $vals .= "'".$valChild."',";
+                $vals .= "'".$this->es($valChild)."',";
             }
             $vals=mb_substr($vals, 0, -1);
             $vals .= "),(";
             }else{
-            $keys .= "`".$key."`,";
-            $vals .= "'".$val."',";
+            $keys .= "`".$this->es($key)."`,";
+            $vals .= "'".$this->es($val)."',";
             }
         }
         
@@ -224,7 +221,7 @@ class DB
         return $this;
         }
         
-    public function Delete(){
+        public function Delete(){
         $sql = "DELETE FROM `".$this->callTable."`";
         
         //WHERE
@@ -257,13 +254,16 @@ class DB
         }
         return $array;
     }
+
     
-    private function Query($q){ 
+    private function Query($q){
+        //$this->connectId->begin_transaction(MYSQLI_TRANS_START_READ_WRITE);    
         $result=MYSQLI_QUERY($this->connectId,$q) or die('MySQL Errore: ' . mysqli_error($this->connectId));
         if($this->debug){
             echo "<br>\nQuery count row:".mysqli_affected_rows($this->connectId)."<br>\n";
             $this->Debug($q);
         }
+        //$this->connectId->commit();
         $this->Clear();
         return $result;
     }
@@ -284,11 +284,11 @@ class DB
     }
     
     public function Create($table, $values){
-        $sql = "CREATE TABLE IF NOT EXISTS `".$table."` (\n";
+        $sql = "CREATE TABLE IF NOT EXISTS `".$this->es($table)."` (\n";
         $_autoIncrementKey = null;
         
         foreach($values as $i=>$val){
-            $sql .= "`".$i."` ";
+            $sql .= "`".$this->es($i)."` ";
             $_type = "text";
             $_count = "";
             $_isNull = " NULL";
@@ -310,10 +310,10 @@ class DB
                             break;
                     case "autoIncrement":
                             $_autoIncrement = " AUTO_INCREMENT";
-                            $_autoIncrementKey = $i;
+                            $_autoIncrementKey = $this->es($i);
                             break;
                     case "default":
-                            $_default = " DEFAULT '".$values[$val][$v]."'";
+                            $_default = " DEFAULT '".$this->es($values[$val][$v])."'";
                             break;
                 }
             }
@@ -332,10 +332,8 @@ class DB
         $this->$table=$this;
     }
     
-    public function getPrimary(){
-        $sql = "SHOW KEYS FROM `".$this->callTable."` WHERE Key_name = 'PRIMARY'";
-        $res=$this->Query($sql);
-        return $this->getArray($res)[0]['Column_name'] ?? null;
+    private function es($string){
+        return mysqli_real_escape_string($string);
     }
     
 }
