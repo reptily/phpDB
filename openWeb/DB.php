@@ -332,6 +332,12 @@ class DB
         $this->$table=$this;
     }
     
+    public function getPrimary(){
+        $sql = "SHOW KEYS FROM `".$this->callTable."` WHERE Key_name = 'PRIMARY'";
+        $res=$this->Query($sql);
+        return $this->getArray($res)[0]['Column_name'] ?? null;
+    }
+    
     private function es($string){
         return mysqli_real_escape_string($string);
     }
