@@ -20,8 +20,8 @@ class DB
         
         $res=$this->Query("SHOW TABLES;");
         $tables=$this->getArray($res);
-        foreach($tables as $table){
-            foreach($table as $table){
+        foreach ($tables as $table){
+            foreach ($table as $table){
             $this->$table=$this;
             }
         }
@@ -34,21 +34,21 @@ class DB
     
     public function where(...$where){
         $or=false;
-        foreach($where as $w){
-            if(is_array($w)){
+        foreach ($where as $w){
+            if (is_array($w)){
             $key=key($w);
             $val=$w[key($w)];
             $this->where.="`".$this->es($key)."` = '".$this->es($val)."' `~` ";
-            }else{
-            if(mb_strtolower(trim($w)) == "or"){
+            } else {
+            if (mb_strtolower(trim($w)) == "or"){
                 $or=true;
-            }else{
+            } else {
                 preg_match('/(.*)(>=|==|<=)(.*)/i', $w, $val);
-                if(count($val) != 4){
+                if (count($val) != 4){
                 preg_match('/(.*)(>|<)(.*)/i', $w, $val);
                         }
                 
-                if(count($val) == 4){
+                if (count($val) == 4){
                 $val[1]=str_replace(".","`.`",$val[1]);
                 $this->where.="`".trim($this->es($val[1]))."` ".$this->es($val[2])." '".trim($this->es($val[3]))."' `~` ";
                 }
@@ -56,9 +56,9 @@ class DB
             }
         }
         $this->where=substr($this->where, 0, -4);
-        if($or){
+        if ($or){
             $this->where=str_replace("`~`","OR",$this->where);
-        }else{
+        } else {
             $this->where=str_replace("`~`","AND",$this->where);
         }
         
@@ -85,7 +85,7 @@ class DB
     public function set($set){
         $this->set = "SET ";
         $vals = ""; 
-        foreach($set as $key=>$val){
+        foreach ($set as $key=>$val){
             $vals .= "`".$this->es($key)."` = '".$this->es($val)."',";
         }
         $this->set.=mb_substr($vals, 0, -1);
@@ -93,18 +93,18 @@ class DB
     }
     
     public function limit(int $l1, int $l2=-1){
-        if($l2 == -1){
+        if ($l2 == -1){
           $this->limit=$l1;
-        }else{
+        } else {
           $this->limit=$l1.",".$l2;
         }
         return $this;
     }
     
     public function order($key,$value){
-        if("ASC" == mb_strtoupper($value)){
+        if ("ASC" == mb_strtoupper($value)){
             $value="ASC";
-        }else{
+        } else {
             $value="DESC";
             }
             
@@ -124,14 +124,14 @@ class DB
     public function Select(){
         //Feild
         $fields="* ";
-        if(is_array($this->field)){
+        if (is_array($this->field)){
             $fields="";
-            foreach($this->field as $f=>$field){
-            if(is_array($field)){
-                foreach($field as $val){
+            foreach ($this->field as $f=>$field){
+            if (is_array($field)){
+                foreach ($field as $val){
                 $fields.="`".$f."`.`".$val."`,";
                 }
-            }else{
+            } else {
                 $fields.="`".$field."`,";
             }
             }
@@ -141,22 +141,22 @@ class DB
         $sql = "SELECT ".$fields." FROM `".$this->callTable."`";
         
         //JOIN
-        if($this->join != ""){
+        if ($this->join != ""){
             $sql .= $this->join;
         }
         
         //WHERE
-        if($this->where != ""){
+        if ($this->where != ""){
             $sql .= " WHERE ".$this->where;
         }
         
         //ORDER	
-        if(is_array($this->order)){
+        if (is_array($this->order)){
             $sql .= " ORDER BY `".$this->order['key']."` ".$this->order['value'];
         }
         
         //LIMIT
-        if($this->limit != ""){
+        if ($this->limit != ""){
             $sql .= " LIMIT ".$this->limit;
         }
         
@@ -174,7 +174,7 @@ class DB
             $array = [];
             while($row = $this->result->fetch_array(MYSQLI_ASSOC))
                 $array[]=$row;
-            if($this->debug)
+            if ($this->debug)
                 $this->Debug(json_encode($array)."<br>\n");
             return $array;
             }
@@ -194,10 +194,10 @@ class DB
         $keys="";
         $vals="";
         $_2d=true;
-        foreach($arr as $key=>$val){
-            if(is_array($val)){
-            foreach($val as $keyChild=>$valChild){
-                if($_2d){
+        foreach ($arr as $key=>$val){
+            if (is_array($val)){
+            foreach ($val as $keyChild=>$valChild){
+                if ($_2d){
                 $keys .= "`".$this->es($keyChild)."`,";
                 $_2d=false;
                 }
@@ -205,14 +205,14 @@ class DB
             }
             $vals=mb_substr($vals, 0, -1);
             $vals .= "),(";
-            }else{
+            } else {
             $keys .= "`".$this->es($key)."`,";
             $vals .= "'".$this->es($val)."',";
             }
         }
         
         $keys=mb_substr($keys, 0, -1);
-        if($_2d) $vals=mb_substr($vals, 0, -1);
+        if ($_2d) $vals=mb_substr($vals, 0, -1);
         else $vals=mb_substr($vals, 0, -3);
         $sql = $sql."(".$keys.") VALUES(".$vals.");";
         
@@ -225,7 +225,7 @@ class DB
         $sql = "DELETE FROM `".$this->callTable."`";
         
         //WHERE
-        if($this->where != "")
+        if ($this->where != "")
             $sql .= " WHERE ".$this->where;
         
         $sql.=";";
@@ -238,7 +238,7 @@ class DB
         $sql = "UPDATE `".$this->callTable."` ".$this->set;
         
         //WHERE
-        if($this->where != "")
+        if ($this->where != "")
             $sql .= " WHERE ".$this->where;
         
         $sql.=";";    
@@ -259,7 +259,7 @@ class DB
     private function Query($q){
         //$this->connectId->begin_transaction(MYSQLI_TRANS_START_READ_WRITE);    
         $result=MYSQLI_QUERY($this->connectId,$q) or die('MySQL Errore: ' . mysqli_error($this->connectId));
-        if($this->debug){
+        if ($this->debug){
             echo "<br>\nQuery count row:".mysqli_affected_rows($this->connectId)."<br>\n";
             $this->Debug($q);
         }
@@ -287,7 +287,7 @@ class DB
         $sql = "CREATE TABLE IF NOT EXISTS `".$this->es($table)."` (\n";
         $_autoIncrementKey = null;
         
-        foreach($values as $i=>$val){
+        foreach ($values as $i=>$val){
             $sql .= "`".$this->es($i)."` ";
             $_type = "text";
             $_count = "";
@@ -295,7 +295,7 @@ class DB
             $_default = "";
             $_autoIncrement = "";
             
-            foreach($val as $k=>$v){
+            foreach ($val as $k=>$v){
                 switch($k){
                     case "type":
                         $_type=$values[$i][$k];
@@ -304,7 +304,7 @@ class DB
                         $_count="(".(int)$values[$i][$k].")";
                         break;
                     case "isNull":
-                            if(!$values[$i][$k]){
+                            if (!$values[$i][$k]){
                                 $_isNull = " NOT NULL";
                             }
                             break;
@@ -321,9 +321,9 @@ class DB
             $sql .= $_type.$_count.$_isNull.$_default.$_autoIncrement.",\n";
         }
         
-        if($_autoIncrementKey != null){
+        if ($_autoIncrementKey != null){
             $sql .= "PRIMARY KEY (`".$_autoIncrementKey."`)\n";
-        }else{
+        } else {
             $sql=mb_substr($sql, 0, count($sql)-2);
         }
         $sql .= ")";
@@ -343,4 +343,3 @@ class DB
     }
     
 }
-?>
